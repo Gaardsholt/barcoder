@@ -9,6 +9,7 @@ jobs:
       - run:
           name: Build application Docker image
           command: |
+            export PATH="$PATH:/root/.dotnet/tools"
             dotnet tool install --global dotnet-sonarscanner --version 4.4.2
             dotnet restore
             dotnet-sonarscanner begin /k:"Gaardsholt_barcoder" /d:sonar.organization="gaardsholt-github" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.login="$SONAR"
