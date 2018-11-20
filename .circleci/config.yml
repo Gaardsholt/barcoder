@@ -7,7 +7,7 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: Install pre-reqs
+          name: Install Java that SonarCloud needs
           command: |
             apt-get update -y
             apt-get install default-jdk -y
@@ -27,13 +27,17 @@ jobs:
       - checkout
       - setup_remote_docker
       - deploy:
-          name: Build docker image
+          name: Build and push docker image
           command: |
-              docker build -t automationtaskforce.azurecr.io/$CIRCLE_PROJECT_REPONAME:$CIRCLE_SHA1 ./$CIRCLE_PROJECT_REPONAME
+              docker build -t Gaardsholt/$CIRCLE_PROJECT_REPONAME:$CIRCLE_SHA1 ./$CIRCLE_PROJECT_REPONAME
+              docker login -u $DOCKER_USER -p $DOCKER_PASS
+              docker push Gaardsholt/$CIRCLE_PROJECT_REPONAME:$CIRCLE_SHA1
 
 workflows:
   version: 2
   test-and-deploy:
     jobs:
       - test
-      - build
+      - build:
+          requires:
+            - test
