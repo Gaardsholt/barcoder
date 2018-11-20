@@ -1,19 +1,15 @@
-FROM microsoft/dotnet:2.1-aspnetcore-runtime AS base
+FROM microsoft/dotnet:2.1-sdk AS builder
+WORKDIR /source
+# copy csproj and restore as distinct layers
+COPY *.csproj ./
+RUN dotnet restore
+# copy everything else and build
+COPY . ./
+RUN dotnet publish -c Release -o /app/ -r linux-x64
+# build runtime image
+FROM microsoft/dotnet:2.1-aspnetcore-runtime
 WORKDIR /app
+COPY --from=builder /app .
+ENV ASPNETCORE_URLS http://*:80
 EXPOSE 80
-
-FROM microsoft/dotnet:2.1-sdk AS build
-WORKDIR /src
-COPY ["barcoder/barcoder.csproj", "barcoder/"]
-RUN dotnet restore "barcoder/barcoder.csproj"
-COPY . .
-WORKDIR "/src/barcoder"
-RUN dotnet build "barcoder.csproj" -c Release -o /app
-
-FROM build AS publish
-RUN dotnet publish "barcoder.csproj" -c Release -o /app
-
-FROM base AS final
-WORKDIR /app
-COPY --from=publish /app .
 ENTRYPOINT ["dotnet", "barcoder.dll"]
