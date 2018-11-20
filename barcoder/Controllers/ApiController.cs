@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using barcoder.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -16,60 +17,27 @@ using ZXing;
 
 namespace barcoder.Controllers
 {
-    public class Barcodes
-    {
-        public string Key { get; set; }
-        public int Value { get; set; }
-    }
 
-    [Route("image.png")]
-    //[Route("image.png/{type}/{text}/{width}/{height}/{rotate?}")]
+    [Route("Api")]
     [ApiController]
     public class ApiController : ControllerBase
     {
-        // http://localhost:21666/image.png/128/5901234123457/300/30
-        // http://localhost:21666/image.png?type=128&text=5901234123457&width=300&height=30
-
-        
         [HttpGet]
-        public IActionResult Get(string text, BarcodeFormat type, int width = 300, int height = 30, int rotate = 0)
+        public List<Barcodes> GetTypes()
         {
-            var BarcodeData = new BarcodeWriterPixelData
+            var values = Enum.GetValues(typeof(BarcodeFormat)).Cast<BarcodeFormat>();
+
+            var AllBarcodes = new List<Barcodes>();
+
+            foreach (int i in Enum.GetValues(typeof(BarcodeFormat)))
             {
-                Format = type,
-                Options = new ZXing.Common.EncodingOptions
-                {
-                    Height = height,
-                    Width = width,
-                    Margin = 0,
-                    PureBarcode = true
-                }
-            }.Write(text);
-
-            var rotatedImage = RotateImage(BarcodeData.Pixels, rotate, BarcodeData.Width, BarcodeData.Height);
-
-            return File(rotatedImage, "image/png");
-        }
-
-
-
-
-        private byte[] RotateImage(byte[] imageInBytes, float degree, int width, int height)
-        {
-            using (var image = Image.LoadPixelData<SixLabors.ImageSharp.PixelFormats.Rgba32>(imageInBytes, width, height))
-            {
-                image.Mutate(a => a.Rotate(degree));
-                
-                
-                using (var ms = new MemoryStream())
-                {
-                    image.Save(ms, ImageFormats.Png);
-                    return ms.ToArray();
-                }
+                var name = Enum.GetName(typeof(BarcodeFormat), i);
+                AllBarcodes.Add(new Barcodes { Key = name, Value = i });
             }
+
+            return AllBarcodes;
         }
-
-
+        
     }
 
 }

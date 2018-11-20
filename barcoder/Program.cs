@@ -7,9 +7,11 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using ZXing;
 
 namespace barcoder
 {
+
     public class Program
     {
         public static void Main(string[] args)
