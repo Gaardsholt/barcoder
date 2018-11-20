@@ -1,0 +1,33 @@
+version: 2
+jobs:
+  test:
+    docker:
+      - image: microsoft/dotnet:2.1-sdk
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build application Docker image
+          command: |
+            dotnet tool install --global dotnet-sonarscanner --version 4.4.2
+            dotnet restore
+            dotnet-sonarscanner begin /k:"Gaardsholt_barcoder" /d:sonar.organization="gaardsholt-github" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.login="$SONAR"
+            dotnet msbuild /t:Rebuild
+            dotnet-sonarscanner end /d:sonar.login="$SONAR"
+  build:
+    docker:
+      - image: docker:18.05.0-ce
+    steps:
+      - checkout
+      - setup_remote_docker
+      - deploy:
+          name: Build docker image
+          command: |
+              docker build -t automationtaskforce.azurecr.io/$CIRCLE_PROJECT_REPONAME:$CIRCLE_SHA1 ./$CIRCLE_PROJECT_REPONAME
+
+workflows:
+  version: 2
+  test-and-deploy:
+    jobs:
+      - test
+      - build
