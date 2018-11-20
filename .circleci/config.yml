@@ -9,9 +9,8 @@ jobs:
       - run:
           name: Install pre-reqs
           command: |
-            add-apt-repository ppa:webupd8team/java
-            apt update
-            apt install oracle-java8-installer
+            apt-get update
+            apt-get install default-jdk
       - run:
           name: Build application Docker image
           command: |
