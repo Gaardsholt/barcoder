@@ -3,4 +3,4 @@
 
 # barcoder
 
-This is used for generating bacodes
+This is used for generating barcodes
