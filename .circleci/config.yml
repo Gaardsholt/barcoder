@@ -10,6 +10,7 @@ jobs:
           name: Bump the version
           command: |
             curl https://raw.githubusercontent.com/pnikosis/semtag/master/semtag --output ../semtag
+            chmod +x ../semtag
             GITMESSAGE=$(git log -1 --pretty=%B)
             shopt -s nocasematch
             if [[ $GITMESSAGE =~ (#major|#minor|#patch) ]]; then
