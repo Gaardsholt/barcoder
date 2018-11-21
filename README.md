@@ -2,3 +2,5 @@
 [![CircleCI](https://circleci.com/gh/Gaardsholt/barcoder.svg?style=svg)](https://circleci.com/gh/Gaardsholt/barcoder)
 
 # barcoder
+
+This is used for generating bacodes
