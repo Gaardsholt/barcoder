@@ -62,7 +62,7 @@ workflows:
             branches:
               only: master
             tags:
-              only: /^!v.*/
+              ignore: /^v.*/
       - test:
           filters:
             branches:
