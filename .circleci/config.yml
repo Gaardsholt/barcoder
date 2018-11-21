@@ -9,7 +9,7 @@ jobs:
       - run:
           name: Bump the version
           command: |
-            curl https://raw.githubusercontent.com/pnikosis/semtag/master/semtag --output semtag
+            curl https://raw.githubusercontent.com/pnikosis/semtag/master/semtag --output ../semtag
             GITMESSAGE=$(git log -1 --pretty=%B)
             shopt -s nocasematch
             if [[ $GITMESSAGE =~ (#major|#minor|#patch) ]]; then
@@ -19,7 +19,7 @@ jobs:
             fi
 
             echo $KINDOFVERSION
-            semtag final -s $KINDOFVERSION
+            ../semtag final -s $KINDOFVERSION
   test:
     docker:
       - image: microsoft/dotnet:2.1-sdk
