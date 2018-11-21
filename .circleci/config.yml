@@ -12,7 +12,11 @@ jobs:
             curl https://raw.githubusercontent.com/pnikosis/semtag/master/semtag --output ../semtag
             chmod +x ../semtag
             GITMESSAGE=$(git log -1 --pretty=%B)
+
+            echo $GITMESSAGE
+
             shopt -s nocasematch
+            KINDOFVERSION="patch"
             if [[ $GITMESSAGE =~ (#major|#minor|#patch) ]]; then
                 KINDOFVERSION=${BASH_REMATCH[1]}
                 KINDOFVERSION=`echo $KINDOFVERSION | tr '[:upper:]' '[:lower:]'`
