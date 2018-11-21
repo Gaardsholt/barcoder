@@ -2,9 +2,10 @@ version: 2
 jobs:
   bump-version:
     docker:
-      - image: docker:18.05.0-ce
+      - image: circleci/golang:1.9
     steps:
       - checkout
+      - setup_remote_docker
       - run:
           name: Bump the version
           command: |
