@@ -58,7 +58,7 @@ jobs:
           name: Build and push docker image
           command: |
               apt-get update -y
-              apt-get install docker -y
+              apt-get install docker
               docker build -t gaardsholt/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG ./$CIRCLE_PROJECT_REPONAME
               docker login -u $DOCKER_USER -p $DOCKER_PASS
               docker push gaardsholt/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
