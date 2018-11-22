@@ -53,15 +53,12 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - "ee:9f:76:b5:91:f3:3f:24:77:a8:67:97:8b:0a:2e:e4"
-      - run:
-          name: Install git
-          command: |
-            apt-get update -y
-            apt-get install docker -y
       - checkout
       - deploy:
           name: Build and push docker image
           command: |
+              apt-get update -y
+              apt-get install docker -y
               docker build -t gaardsholt/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG ./$CIRCLE_PROJECT_REPONAME
               docker login -u $DOCKER_USER -p $DOCKER_PASS
               docker push gaardsholt/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
