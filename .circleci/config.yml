@@ -56,10 +56,9 @@ jobs:
       - run:
           name: Install pre-reqs
           command: |
-              apt-get update -y
-              apt-get install curl
-              apt-get install git
-              apt-get install openssh-client
+              apk update
+              apk add openssh
+              apk add git
       - checkout
       - deploy:
           name: Build and push docker image
