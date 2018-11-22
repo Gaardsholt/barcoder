@@ -48,7 +48,7 @@ jobs:
             dotnet-sonarscanner end /d:sonar.login="$SONAR"
   build:
     docker:
-      - image: microsoft/dotnet:2.1-sdk
+      - image: circleci/golang:1.9
     steps:
       - add_ssh_keys:
           fingerprints:
@@ -58,7 +58,16 @@ jobs:
           name: Build and push docker image
           command: |
               apt-get update -y
-              apt-get install docker
+              apt-get install apt-transport-https
+              apt-get install ca-certificates
+              apt-get install curl
+              apt-get install software-properties-common
+              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+              apt-key fingerprint 0EBFCD88
+              add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+              apt-get update -y
+              apt-get install docker-ce
+
               docker build -t gaardsholt/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG ./$CIRCLE_PROJECT_REPONAME
               docker login -u $DOCKER_USER -p $DOCKER_PASS
               docker push gaardsholt/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
