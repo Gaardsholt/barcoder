@@ -48,7 +48,7 @@ jobs:
             dotnet-sonarscanner end /d:sonar.login="$SONAR"
   build:
     docker:
-      - image: docker:18.05.0-ce
+      - image: circleci/golang:1.9
     steps:
       - add_ssh_keys:
           fingerprints:
