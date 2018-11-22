@@ -42,7 +42,7 @@ jobs:
             export PATH="$PATH:/root/.dotnet/tools"
             dotnet tool install --global dotnet-sonarscanner --version 4.4.2
             dotnet restore
-            dotnet-sonarscanner begin /k:"Gaardsholt_barcoder" /d:sonar.organization="gaardsholt-github" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.login="$SONAR"
+            dotnet-sonarscanner begin /k:"Gaardsholt_barcoder" /n:"$CIRCLE_PROJECT_REPONAME" /d:sonar.organization="gaardsholt-github" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.login="$SONAR"
             dotnet msbuild /t:Rebuild
             dotnet-sonarscanner end /d:sonar.login="$SONAR"
   build:
