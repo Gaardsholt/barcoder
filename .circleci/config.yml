@@ -13,8 +13,6 @@ jobs:
             chmod +x ../semtag
             GITMESSAGE=$(git log -1 --pretty=%B)
 
-            echo $GITMESSAGE
-
             shopt -s nocasematch
             KINDOFVERSION="patch"
             if [[ $GITMESSAGE =~ (#major|#minor|#patch) ]]; then
@@ -42,7 +40,7 @@ jobs:
             export PATH="$PATH:/root/.dotnet/tools"
             dotnet tool install --global dotnet-sonarscanner --version 4.4.2
             dotnet restore
-            dotnet-sonarscanner begin /k:"Gaardsholt_barcoder" /n:"$CIRCLE_PROJECT_REPONAME" /d:sonar.organization="gaardsholt-github" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.login="$SONAR"
+            dotnet-sonarscanner begin /k:"Gaardsholt_$CIRCLE_PROJECT_REPONAME" /n:"$CIRCLE_PROJECT_REPONAME" /d:sonar.organization="gaardsholt-github" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.login="$SONAR"
             dotnet msbuild /t:Rebuild
             dotnet-sonarscanner end /d:sonar.login="$SONAR"
   build:
@@ -67,18 +65,18 @@ workflows:
             branches:
               only: master
             tags:
-              ignore: /^v.*/
+              ignore: /^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
       - test:
           filters:
             branches:
               only: master
             tags:
-              only: /^v.*/
+              only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
       - build:
           filters:
             branches:
               only: master
             tags:
-              only: /^v.*/
+              only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
           requires:
             - test
