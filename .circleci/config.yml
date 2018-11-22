@@ -58,6 +58,7 @@ jobs:
           command: |
             apt-get update -y
             apt-get install git
+            apt-get install docker
       - checkout
       - setup_remote_docker
       - deploy:
