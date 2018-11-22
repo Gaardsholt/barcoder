@@ -53,7 +53,7 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - "ee:9f:76:b5:91:f3:3f:24:77:a8:67:97:8b:0a:2e:e4"
-      - prereq:
+      - run:
           name: Install pre-reqs
           command: |
               apt-get update -y
