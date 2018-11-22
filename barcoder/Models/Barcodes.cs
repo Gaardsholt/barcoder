@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace barcoder.Models
 {
-    public class Barcodes
+    public class Barcode
     {
         public string Key { get; set; }
         public int Value { get; set; }

@@ -11,14 +11,8 @@ namespace barcoder.Controllers
     {
         public IActionResult Index()
         {
-            return View();
-        }
-
-        public IActionResult Contact()
-        {
-            ViewData["Message"] = "Your contact page.";
-
-            return View();
+            var myTypes = new ApiController();
+            return View(myTypes.GetTypes());
         }
 
     }

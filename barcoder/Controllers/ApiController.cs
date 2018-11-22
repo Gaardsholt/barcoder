@@ -23,18 +23,22 @@ namespace barcoder.Controllers
     public class ApiController : ControllerBase
     {
         [HttpGet]
-        public List<Barcodes> GetTypes()
+        public List<Barcode> GetTypes()
         {
+            var allowedBarcodes = MultiFormatWriter.SupportedWriters.ToList();
+            var AllBarcodes = new List<Barcode>();
+
             var values = Enum.GetValues(typeof(BarcodeFormat)).Cast<BarcodeFormat>();
-
-            var AllBarcodes = new List<Barcodes>();
-
             foreach (int i in Enum.GetValues(typeof(BarcodeFormat)))
             {
                 var name = Enum.GetName(typeof(BarcodeFormat), i);
-                AllBarcodes.Add(new Barcodes { Key = name, Value = i });
-            }
 
+                var isAllowed = allowedBarcodes.Any(a => Enum.GetName(typeof(BarcodeFormat), a) == name);
+                if (isAllowed)
+                    AllBarcodes.Add(new Barcode { Key = name, Value = i });
+                
+
+            }
             return AllBarcodes;
         }
         
