@@ -98,11 +98,6 @@ workflows:
               ignore: /.*/
           requires:
             - test
-      - anchore:
-          filters:
-            tags:
-              only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
-            branches:
-              ignore: /.*/
+      - scan_image:
           requires:
             - build
