@@ -46,10 +46,6 @@ jobs:
             dotnet-sonarscanner begin /k:"Gaardsholt_$CIRCLE_PROJECT_REPONAME" /n:"$CIRCLE_PROJECT_REPONAME" /d:sonar.organization="gaardsholt-github" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.login="$SONAR"
             dotnet msbuild /t:Rebuild
             dotnet-sonarscanner end /d:sonar.login="$SONAR"
-  scan_image:
-    jobs:
-      - anchore/image_scan:
-          image_name: 'gaardsholt/$CIRCLE_PROJECT_REPONAME:latest'
   build:
     docker:
       - image: docker:18.05.0-ce
@@ -75,7 +71,7 @@ jobs:
               docker push gaardsholt/$CIRCLE_PROJECT_REPONAME:latest
 
 workflows:
-  version: 2
+  version: 2.1
   test-and-deploy:
     jobs:
       - bump-version:
@@ -98,6 +94,6 @@ workflows:
               ignore: /.*/
           requires:
             - test
-      - scan_image:
-          requires:
-            - build
+      - anchore/image_scan:
+          image_name: 'gaardsholt/$CIRCLE_PROJECT_REPONAME:latest'
+          timeout: '300'
