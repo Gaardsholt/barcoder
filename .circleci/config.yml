@@ -8,7 +8,6 @@ jobs:
           fingerprints:
             - "ee:9f:76:b5:91:f3:3f:24:77:a8:67:97:8b:0a:2e:e4"
       - checkout
-      - setup_remote_docker
       - run:
           name: Bump the version
           command: |
@@ -31,7 +30,6 @@ jobs:
       - image: microsoft/dotnet:2.1-sdk
     steps:
       - checkout
-      - setup_remote_docker
       - run:
           name: Install Java for SonarCloud Scanner
           command: |
@@ -53,6 +51,7 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - "ee:9f:76:b5:91:f3:3f:24:77:a8:67:97:8b:0a:2e:e4"
+      - setup_remote_docker
       - run:
           name: Install pre-reqs
           command: |
@@ -63,10 +62,11 @@ jobs:
       - deploy:
           name: Build and push docker image
           command: |
-              docker build -t gaardsholt/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG ./$CIRCLE_PROJECT_REPONAME
               docker login -u $DOCKER_USER -p $DOCKER_PASS
-              docker push gaardsholt/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
-              docker push gaardsholt/$CIRCLE_PROJECT_REPONAME
+
+              docker build -t gaardsholt/$CIRCLE_PROJECT_REPONAME:${CIRCLE_TAG:1} -t gaardsholt/$CIRCLE_PROJECT_REPONAME:latest ./$CIRCLE_PROJECT_REPONAME
+              docker push gaardsholt/$CIRCLE_PROJECT_REPONAME:${CIRCLE_TAG:1}
+              docker push gaardsholt/$CIRCLE_PROJECT_REPONAME:latest
 
 workflows:
   version: 2
