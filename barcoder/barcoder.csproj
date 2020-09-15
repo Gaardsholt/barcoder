@@ -12,7 +12,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.5" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.0" />
     <PackageReference Include="Veldrid.ImageSharp" Version="4.4.0" />
-    <PackageReference Include="ZXing.Net" Version="0.16.4" />
+    <PackageReference Include="ZXing.Net" Version="0.16.5" />
   </ItemGroup>
 
   <ItemGroup>
