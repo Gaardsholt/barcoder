@@ -39,7 +39,7 @@ namespace barcoder
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc(_apiVersion, new Info { Title = _apiTitle, Version = _apiVersion });
+                c.SwaggerDoc(_apiVersion, new Microsoft.OpenApi.Models.OpenApiInfo { Title = _apiTitle, Version = _apiVersion});
             });
         }
 

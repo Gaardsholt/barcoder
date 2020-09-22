@@ -11,8 +11,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Processing.Transforms;
 using ZXing;
 
 namespace barcoder.Controllers
@@ -62,7 +63,7 @@ namespace barcoder.Controllers
 
                 using (var ms = new MemoryStream())
                 {
-                    image.Save(ms, ImageFormats.Png);
+                    image.Save(ms, PngFormat.Instance);
                     return ms.ToArray();
                 }
             }
