@@ -36,8 +36,7 @@ jobs:
       - run:
           name: Install Java for SonarCloud Scanner
           command: |
-            apt-get update -y
-            apt-get install default-jdk -y
+            apk --no-cache add openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
       - run:
           name: Run SonarCloud Scanner
           command: |
