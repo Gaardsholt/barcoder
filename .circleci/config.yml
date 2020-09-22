@@ -30,13 +30,14 @@ commands:
 
 jobs:
   test:
-    executor: docker
+    executor: dotnet
     steps:
       - checkout
       - run:
           name: Install Java for SonarCloud Scanner
           command: |
-            apk --no-cache add openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+            apt-get update -y
+            apt-get install default-jdk -y
       - run:
           name: Run SonarCloud Scanner
           command: |
@@ -54,8 +55,6 @@ jobs:
           name: Install pre-reqs
           command: |
               apk update
-              apk add openssh
-              apk add git
       - checkout
       - docker-build
       - docker-login
