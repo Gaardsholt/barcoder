@@ -1,33 +1,36 @@
-version: 2
-jobs:
-  bump-version:
+version: 2.1
+
+executors:
+  docker:
     docker:
-      - image: circleci/golang:1.9
-    steps:
-      - add_ssh_keys:
-          fingerprints:
-            - "ee:9f:76:b5:91:f3:3f:24:77:a8:67:97:8b:0a:2e:e4"
-      - checkout
-      - run:
-          name: Bump the version
-          command: |
-            curl https://raw.githubusercontent.com/pnikosis/semtag/master/semtag --output ../semtag
-            chmod +x ../semtag
-            GITMESSAGE=$(git log -1 --pretty=%B)
-
-            shopt -s nocasematch
-            KINDOFVERSION="patch"
-            if [[ $GITMESSAGE =~ (#major|#minor|#patch) ]]; then
-                KINDOFVERSION=${BASH_REMATCH[1]}
-                KINDOFVERSION=`echo $KINDOFVERSION | tr '[:upper:]' '[:lower:]'`
-                KINDOFVERSION=${KINDOFVERSION//#}
-            fi
-
-            echo $KINDOFVERSION
-            ../semtag final -s $KINDOFVERSION
-  test:
+      - image: docker:18.05.0-ce
+  dotnet:
     docker:
       - image: microsoft/dotnet:2.1-sdk
+    
+
+commands:
+  docker-build:
+    steps:
+      - run:
+          name: "Docker: Building"
+          command: docker build -t gaardsholt/$CIRCLE_PROJECT_REPONAME:${CIRCLE_TAG:1} -t gaardsholt/$CIRCLE_PROJECT_REPONAME:latest ./$CIRCLE_PROJECT_REPONAME
+  docker-login:
+    steps:
+      - run:
+          name: "Docker: Logging in"
+          command: docker login -u $DOCKER_USER -p $DOCKER_PASS
+  docker-push:
+    steps:
+      - run:
+          name: "Docker: Push"
+          command: |
+            docker push gaardsholt/$CIRCLE_PROJECT_REPONAME:${CIRCLE_TAG:1}
+            docker push gaardsholt/$CIRCLE_PROJECT_REPONAME:latest
+
+jobs:
+  test:
+    executor: docker
     steps:
       - checkout
       - run:
@@ -44,13 +47,9 @@ jobs:
             dotnet-sonarscanner begin /k:"Gaardsholt_$CIRCLE_PROJECT_REPONAME" /n:"$CIRCLE_PROJECT_REPONAME" /d:sonar.organization="gaardsholt-github" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.login="$SONAR"
             dotnet msbuild /t:Rebuild
             dotnet-sonarscanner end /d:sonar.login="$SONAR"
-  build:
-    docker:
-      - image: docker:18.05.0-ce
+  build-docker:
+    executor: docker
     steps:
-      - add_ssh_keys:
-          fingerprints:
-            - "ee:9f:76:b5:91:f3:3f:24:77:a8:67:97:8b:0a:2e:e4"
       - setup_remote_docker
       - run:
           name: Install pre-reqs
@@ -59,36 +58,38 @@ jobs:
               apk add openssh
               apk add git
       - checkout
-      - deploy:
-          name: Build and push docker image
-          command: |
-              docker login -u $DOCKER_USER -p $DOCKER_PASS
-
-              docker build -t gaardsholt/$CIRCLE_PROJECT_REPONAME:${CIRCLE_TAG:1} -t gaardsholt/$CIRCLE_PROJECT_REPONAME:latest ./$CIRCLE_PROJECT_REPONAME
-              docker push gaardsholt/$CIRCLE_PROJECT_REPONAME:${CIRCLE_TAG:1}
-              docker push gaardsholt/$CIRCLE_PROJECT_REPONAME:latest
+      - docker-build
+      - docker-login
 
 workflows:
-  version: 2
   test-and-deploy:
     jobs:
-      - bump-version:
-          filters:
-            tags:
-              ignore: /^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
-            branches:
-              only: /.*/
       - test:
           filters:
             tags:
               only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
             branches:
               ignore: /.*/
-      - build:
+      - build-docker:
           filters:
             tags:
               only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
             branches:
               ignore: /.*/
+          requires:
+            - test
+          post-steps:
+            - docker-push
+
+  test:
+    jobs:
+      - test:
+          filters:
+            tags:
+              ignore: /^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
+      - build-docker:
+          filters:
+            tags:
+              ignore: /^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
           requires:
             - test
