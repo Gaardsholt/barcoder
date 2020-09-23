@@ -1,30 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Reflection.Emit;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
 using ZXing;
 
 namespace barcoder.Controllers
 {
-
-
     [Route("image.png")]
     [ApiController]
     public class ImageController : ControllerBase
     {
-        
         // http://localhost:21666/image.png?type=128&text=5901234123457&width=300&height=30
         [HttpGet]
         public IActionResult Get(string text, BarcodeFormat type, int width = 300, int height = 30, int rotate = 0)
@@ -51,7 +42,7 @@ namespace barcoder.Controllers
             {
                 return BadRequest(e.Message);
             }
-            
+
         }
 
 
@@ -68,7 +59,6 @@ namespace barcoder.Controllers
                 }
             }
         }
-
 
     }
 }
