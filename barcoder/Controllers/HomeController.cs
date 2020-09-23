@@ -5,6 +5,8 @@ using System.Diagnostics;
 
 namespace barcoder.Controllers
 {
+    // mobilepay://send?phone=46028&comment=Smart+QR-kodegenerator+%3A-%29&amount=49.00&lock=1
+
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

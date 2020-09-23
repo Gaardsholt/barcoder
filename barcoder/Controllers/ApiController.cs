@@ -17,7 +17,6 @@ namespace barcoder.Controllers
             var allowedBarcodes = MultiFormatWriter.SupportedWriters.ToList();
             var AllBarcodes = new List<Barcode>();
 
-            var values = Enum.GetValues(typeof(BarcodeFormat)).Cast<BarcodeFormat>();
             foreach (int i in Enum.GetValues(typeof(BarcodeFormat)))
             {
                 var name = Enum.GetName(typeof(BarcodeFormat), i);
