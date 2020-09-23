@@ -1,5 +1,3 @@
-using System;
-
 namespace barcoder.Models
 {
     public class ErrorViewModel

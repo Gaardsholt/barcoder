@@ -14,7 +14,8 @@ commands:
     steps:
       - run:
           name: "Docker: Building"
-          command: docker build -t gaardsholt/$CIRCLE_PROJECT_REPONAME:${CIRCLE_TAG:1} -t gaardsholt/$CIRCLE_PROJECT_REPONAME:latest ./$CIRCLE_PROJECT_REPONAME
+          command: |
+            docker build -t gaardsholt/$CIRCLE_PROJECT_REPONAME:latest ./$CIRCLE_PROJECT_REPONAME
   docker-login:
     steps:
       - run:
@@ -25,6 +26,7 @@ commands:
       - run:
           name: "Docker: Push"
           command: |
+            docker build -t gaardsholt/$CIRCLE_PROJECT_REPONAME:${CIRCLE_TAG:1} -t gaardsholt/$CIRCLE_PROJECT_REPONAME:latest ./$CIRCLE_PROJECT_REPONAME
             docker push gaardsholt/$CIRCLE_PROJECT_REPONAME:${CIRCLE_TAG:1}
             docker push gaardsholt/$CIRCLE_PROJECT_REPONAME:latest
 
