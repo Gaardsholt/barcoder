@@ -38,9 +38,9 @@ jobs:
       - run:
           name: Install Java for SonarCloud Scanner
           command: |
-            apt-get update -y
-            apt-get install default-jdk -y
-            apk add --update nodejs
+            apt update -y
+            apt install default-jdk -y
+            apt install nodejs -y
       - run:
           name: Run SonarCloud Scanner
           command: |
