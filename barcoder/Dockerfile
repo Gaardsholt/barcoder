@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS builder
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS builder
 WORKDIR /source
 # copy csproj and restore as distinct layers
 COPY *.csproj ./
@@ -8,7 +8,7 @@ COPY . ./
 RUN dotnet publish -c Release -o /app/ -r linux-x64
 
 # build runtime image
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1
+FROM mcr.microsoft.com/dotnet/aspnet:5.0
 WORKDIR /app
 COPY --from=builder /app .
 ENV ASPNETCORE_URLS http://*:5000
