@@ -42,7 +42,7 @@ namespace barcoder.Controllers
         }
 
 
-        private byte[] RotateImage(byte[] imageInBytes, float degree, int width, int height)
+        private static byte[] RotateImage(byte[] imageInBytes, float degree, int width, int height)
         {
             using (var image = Image.LoadPixelData<SixLabors.ImageSharp.PixelFormats.Rgba32>(imageInBytes, width, height))
             {

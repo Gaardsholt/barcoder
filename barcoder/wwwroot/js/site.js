@@ -1,4 +1,4 @@
-﻿barcode = {};
+﻿var barcode = {};
 
 updateRange("barcodeWidthRange", "barcodeWidth");
 updateRange("barcodeHeightRange", "barcodeHeight");
@@ -52,7 +52,7 @@ function validateForm() {
 $("#barcodeSubmit").click(function () {
     var imgUrl = "image.png?" + toQueryString(barcode);
 
-    barcodeImg = document.getElementById("barcodeImg");
+    let barcodeImg = document.getElementById("barcodeImg");
     barcodeImg.src = imgUrl;
 
     $(barcodeImg).show();

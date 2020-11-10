@@ -52,7 +52,6 @@ jobs:
             dotnet msbuild /t:Rebuild
             dotnet-sonarscanner end /d:sonar.login="$SONAR"
   build-docker:
-    name: docker-build
     executor: docker_image
     steps:
       - setup_remote_docker
@@ -91,6 +90,7 @@ workflows:
             tags:
               ignore: /^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
       - build-docker:
+          name: docker-build
           context: gaardsholt
           filters:
             tags:
