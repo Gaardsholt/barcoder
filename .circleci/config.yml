@@ -1,13 +1,13 @@
 version: 2.1
 
 executors:
-  docker:
+  docker_image:
     docker:
-      - image: docker:git
+      - image: cimg/base:stable-18.04
   dotnet:
     docker:
-      - image: mcr.microsoft.com/dotnet/core/sdk:3.1
-    
+      - image: mcr.microsoft.com/dotnet/sdk:5.0
+
 
 commands:
   docker-build:
@@ -38,6 +38,7 @@ jobs:
       - run:
           name: Install Java for SonarCloud Scanner
           command: |
+            mkdir -p /usr/share/man/man1
             apt update -y
             apt install default-jdk -y
             apt install nodejs -y
@@ -45,13 +46,13 @@ jobs:
           name: Run SonarCloud Scanner
           command: |
             export PATH="$PATH:/root/.dotnet/tools"
-            dotnet tool install --global dotnet-sonarscanner --version 4.10.0
+            dotnet tool install --global dotnet-sonarscanner
             dotnet restore
             dotnet-sonarscanner begin /k:"Gaardsholt_$CIRCLE_PROJECT_REPONAME" /n:"$CIRCLE_PROJECT_REPONAME" /o:"gaardsholt-github" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.login="$SONAR" /d:sonar.exclusions="wwwroot\lib\**\*,"
             dotnet msbuild /t:Rebuild
             dotnet-sonarscanner end /d:sonar.login="$SONAR"
   build-docker:
-    executor: docker
+    executor: docker_image
     steps:
       - setup_remote_docker
       - run:
