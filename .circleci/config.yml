@@ -52,6 +52,7 @@ jobs:
             dotnet msbuild /t:Rebuild
             dotnet-sonarscanner end /d:sonar.login="$SONAR"
   build-docker:
+    name: docker-build
     executor: docker_image
     steps:
       - setup_remote_docker
@@ -74,6 +75,7 @@ workflows:
             branches:
               ignore: /.*/
       - build-docker:
+          name: docker-build-push
           context: gaardsholt
           filters:
             tags:
