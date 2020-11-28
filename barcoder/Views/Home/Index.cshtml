@@ -7,14 +7,14 @@
     <div class="col">
         <form id="barcodeForm">
             <div class="form-group">
-                <label for="barcodeText">Text</label>
-                <input type="text" class="form-control" id="barcodeText" placeholder="Text for the barcode">
-            </div>
-            <div class="form-group">
                 <label for="barcodeType">Type</label>
                 <select class="form-control" id="barcodeType" asp-items="@(new SelectList(Model,"Value","Key"))">
                     <option>Select barcode type</option>
                 </select>
+            </div>
+            <div class="form-group">
+                <label for="barcodeText">Text</label>
+                <input type="text" class="form-control" id="barcodeText" placeholder="Text for the barcode">
             </div>
             <div class="form-group">
                 <label for="barcodeWidth">Width</label>
@@ -34,13 +34,13 @@
 
                 <input type="range" class="custom-range" id="barcodeRotateRange" value="0" min="0" max="360">
             </div>
-            <button type="button" class="btn btn-success" id="barcodeSubmit" disabled>Create</button>
         </form>
     </div>
 </div>
 <div class="row mt-5 mb-5">
     <div class="col text-center">
-        <img id="barcodeImg" src="#" style="display: none;" alt="This is the generated barcode" />
+        <img id="barcodeImg" src="#" onerror="console.log('error'); this.style.display='none'" style="display: none;" alt="This is the generated barcode" />
+        <span id="error_message" style="display: none;" ></span>
     </div>
 </div>
 
