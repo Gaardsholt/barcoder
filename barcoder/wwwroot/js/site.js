@@ -17,17 +17,16 @@ function updateRange(range, box) {
     };
 }
 
-$("#barcodeForm input[type=text]").keyup(onInputChange);
-$("#barcodeForm input").change(onInputChange);
 $("#barcodeForm select").change(onInputChange);
+$("#barcodeForm input").on('input', onInputChange);
+
 
 function onInputChange(event) {
-    console.log(event.target.id + " input was changed!");
-
-    validateForm();
+    updateBarcodeData();
+    updateImage();
 }
 
-function validateForm() {
+function updateBarcodeData() {
     barcode = {
         text: $("#barcodeText").val(),
         type: parseInt($("#barcodeType option:selected").attr("value")),
@@ -35,28 +34,25 @@ function validateForm() {
         height: parseInt($("#barcodeHeight").val()),
         rotate: parseInt($("#barcodeRotate").val())
     };
-
-    var formIsValid = true;
-    for (var key in barcode) {
-        if (barcode.hasOwnProperty(key)) {
-            if (typeof (barcode[key]) === "number" && isNaN(barcode[key]) || barcode[key] === "") {
-                formIsValid = false;
-            }
-        }
-    }
-
-    $("#barcodeSubmit").prop('disabled', !formIsValid);
 }
 
-
-$("#barcodeSubmit").click(function () {
-    var imgUrl = "image.png?" + toQueryString(barcode);
-
+function updateImage() {
     let barcodeImg = document.getElementById("barcodeImg");
-    barcodeImg.src = imgUrl;
-
-    $(barcodeImg).show();
-});
+    var imgUrl = "image.png?" + toQueryString(barcode);
+    
+    $.ajax({
+        url: imgUrl,
+        context: document.body
+    }).done(function () {
+        $("#error_message").hide();
+        
+        barcodeImg.src = imgUrl;
+        $(barcodeImg).show();
+    }).fail(function (xhr, ajaxOptions, thrownError) {
+        $("#error_message").text(xhr.responseText).show();
+        $(barcodeImg).hide();
+    });
+}
 
 
 function toQueryString(obj) {
