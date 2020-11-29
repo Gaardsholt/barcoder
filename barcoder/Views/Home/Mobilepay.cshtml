@@ -1,0 +1,35 @@
+﻿@model List<barcoder.Models.Barcode>
+@{
+    ViewData["Title"] = "MobilePay";
+}
+
+<div class="row mt-4">
+    <div class="col">
+        <form id="barcodeForm">
+            <div class="form-group">
+                <label for="barcodeType">Type</label>
+                <select class="form-control" id="barcodeType">
+                    <option value="2048">QR_CODE</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="barcodeText">Text</label>
+                <input type="text" class="form-control" id="barcodeText" placeholder="Text for the barcode">
+            </div>
+            <div class="form-group">
+                <label for="barcodeWidth">Width</label>
+                <input type="number" class="form-control" id="barcodeSize">
+
+                <input type="range" class="custom-range" id="barcodeSizeRange" value="100" min="0" max="1000">
+            </div>
+        </form>
+    </div>
+</div>
+<div class="row mt-5 mb-5">
+    <div class="col text-center">
+        <img id="barcodeImg" src="#" onerror="console.log('error'); this.style.display='none'" style="display: none;" alt="This is the generated barcode" />
+        <span id="error_message" style="display: none;" ></span>
+    </div>
+</div>
+
+<script src="~/js/mobilepay.js" asp-append-version="true"></script>

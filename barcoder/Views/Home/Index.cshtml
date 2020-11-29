@@ -17,13 +17,13 @@
                 <input type="text" class="form-control" id="barcodeText" placeholder="Text for the barcode">
             </div>
             <div class="form-group">
-                <label for="barcodeWidth">Width</label>
+                <label for="barcodeWidth">Size</label>
                 <input type="number" class="form-control" id="barcodeWidth">
 
                 <input type="range" class="custom-range" id="barcodeWidthRange" value="300" min="0" max="4096">
             </div>
             <div class="form-group">
-                <label for="barcodeHeight">Height</label>
+                <label for="barcodeHeight">Size</label>
                 <input type="number" class="form-control" id="barcodeHeight">
 
                 <input type="range" class="custom-range" id="barcodeHeightRange" value="30" min="0" max="1024">
@@ -32,18 +32,16 @@
                 <label for="barcodeRotate">Rotate</label>
                 <input type="number" class="form-control" id="barcodeRotate">
 
-                <input type="range" class="custom-range" id="barcodeRotateRange" value="0" min="0" max="360">
+                <input type="hidden" class="custom-range" id="barcodeRotateRange" value="0" min="0" max="360">
             </div>
         </form>
     </div>
 </div>
 <div class="row mt-5 mb-5">
     <div class="col text-center">
-        <img id="barcodeImg" src="#" onerror="console.log('error'); this.style.display='none'" style="display: none;" alt="This is the generated barcode" />
+        <img id="barcodeImg" src="#" style="display: none;" alt="This is the generated barcode" />
         <span id="error_message" style="display: none;" ></span>
     </div>
 </div>
 
-<script>
-
-</script>
+<script src="~/js/index.js" asp-append-version="true"></script>
