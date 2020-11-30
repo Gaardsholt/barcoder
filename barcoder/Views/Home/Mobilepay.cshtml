@@ -6,18 +6,22 @@
 <div class="row mt-4">
     <div class="col">
         <form id="barcodeForm">
-            <div class="form-group">
+            <div class="form-group" style="display:none">
                 <label for="barcodeType">Type</label>
                 <select class="form-control" id="barcodeType">
                     <option value="2048">QR_CODE</option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="barcodeText">Text</label>
-                <input type="text" class="form-control" id="barcodeText" placeholder="Text for the barcode">
+                <label for="qrNr">Number</label>
+                <input type="text" class="form-control" id="qrNr" placeholder="MobilePay Box Number">
             </div>
             <div class="form-group">
-                <label for="barcodeWidth">Width</label>
+                <label for="qrAmount">Amount</label>
+                <input type="text" class="form-control" id="qrAmount" placeholder="Amount to send">
+            </div>
+            <div class="form-group">
+                <label for="barcodeSize">Size</label>
                 <input type="number" class="form-control" id="barcodeSize">
 
                 <input type="range" class="custom-range" id="barcodeSizeRange" value="100" min="0" max="1000">
@@ -27,8 +31,8 @@
 </div>
 <div class="row mt-5 mb-5">
     <div class="col text-center">
-        <img id="barcodeImg" src="#" onerror="console.log('error'); this.style.display='none'" style="display: none;" alt="This is the generated barcode" />
-        <span id="error_message" style="display: none;" ></span>
+        <img id="barcodeImg" src="#" style="display: none;" alt="This is the generated barcode" />
+        <span id="error_message" style="display: none;"></span>
     </div>
 </div>
 
