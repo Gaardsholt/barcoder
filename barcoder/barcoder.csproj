@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.2" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.0.5" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.0.7" />
     <PackageReference Include="ZXing.Net" Version="0.16.6" />
   </ItemGroup>
 
