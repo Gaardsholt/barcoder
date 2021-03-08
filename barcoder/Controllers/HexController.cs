@@ -24,7 +24,7 @@ namespace barcoder.Controllers
             }
             catch (Exception e)
             {
-                return BadRequest($"'{color}' does not match any known color");
+                return BadRequest($"'{color}' does not match any known color: {e.Message}");
             }
         }
 
