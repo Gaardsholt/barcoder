@@ -12,10 +12,10 @@ namespace barcoder.Controllers
     public class ApiController : ControllerBase
     {
         [HttpGet]
-        public List<Barcode> GetTypes()
+        public Dictionary<string, int> GetTypes()
         {
             var allowedBarcodes = MultiFormatWriter.SupportedWriters.ToList();
-            var AllBarcodes = new List<Barcode>();
+            var AllBarcodes = new Dictionary<string, int>();
 
             foreach (int i in Enum.GetValues(typeof(BarcodeFormat)))
             {
@@ -23,10 +23,13 @@ namespace barcoder.Controllers
 
                 var isAllowed = allowedBarcodes.Any(a => Enum.GetName(typeof(BarcodeFormat), a) == name);
                 if (isAllowed)
-                    AllBarcodes.Add(new Barcode { Key = name, Value = i });
-
+                {
+                    AllBarcodes.Add(name, i);
+                }
 
             }
+            AllBarcodes.Add("HEX", 99999);
+
             return AllBarcodes;
         }
 

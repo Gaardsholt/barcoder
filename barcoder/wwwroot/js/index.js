@@ -33,18 +33,39 @@ function onInputChange(event) {
 }
 
 function updateBarcodeData() {
-    barcode = {
-        text: document.getElementById("barcodeText").value,
-        type: parseInt(document.getElementById("barcodeType").selectedOptions[0].value),
-        width: parseInt(document.getElementById("barcodeWidth").value),
-        height: parseInt(document.getElementById("barcodeHeight").value),
-        rotate: parseInt(document.getElementById("barcodeRotate").value)
-    };
+    let barcodeType = parseInt(document.getElementById("barcodeType").selectedOptions[0].value);
+    let barcodeText = document.getElementById("barcodeText").value;
+    let barcodeWidth = parseInt(document.getElementById("barcodeWidth").value);
+    let barcodeHeight = parseInt(document.getElementById("barcodeHeight").value);
+    let barcodeRotate = parseInt(document.getElementById("barcodeRotate").value);
+
+    if (barcodeType == "99999") {
+        barcode = {
+            url: "hex.png?",
+            data: {
+                color: barcodeText,
+                width: barcodeWidth,
+                height: barcodeHeight,
+            }
+        };
+    } else {
+        barcode = {
+            url: "image.png?",
+            data: {
+                text: barcodeText,
+                type: barcodeType,
+                width: barcodeWidth,
+                height: barcodeHeight,
+                rotate: barcodeRotate
+            }
+        };
+    }
+
 }
 
 function updateImage() {
     let barcodeImg = document.getElementById("barcodeImg");
-    var imgUrl = "image.png?" + toQueryString(barcode);
+    var imgUrl = barcode.url + toQueryString(barcode.data);
 
     window.xhttp = new XMLHttpRequest();
     window.xhttp.onreadystatechange = function () {
@@ -70,14 +91,3 @@ function updateImage() {
     window.xhttp.open("GET", imgUrl, true);
     window.xhttp.send();
 }
-
-
-function toQueryString(obj) {
-    var str = [];
-    for (var p in obj)
-        if (obj.hasOwnProperty(p)) {
-            str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
-        }
-    return str.join("&");
-}
-

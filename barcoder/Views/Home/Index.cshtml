@@ -1,4 +1,4 @@
-﻿@model List<barcoder.Models.Barcode>
+﻿@model Dictionary<string, int>
 @{
     ViewData["Title"] = "Home Page";
 }
@@ -26,7 +26,7 @@
                 <label for="barcodeHeight">Size</label>
                 <input type="number" class="form-control" id="barcodeHeight">
 
-                <input type="range" class="custom-range" id="barcodeHeightRange" value="30" min="0" max="1024">
+                <input type="range" class="custom-range" id="barcodeHeightRange" value="30" min="0" max="4096">
             </div>
             <div class="form-group">
                 <label for="barcodeRotate">Rotate</label>
