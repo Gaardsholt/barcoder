@@ -1,10 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System;
+using System.Drawing;
 using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using ZXing;
+using ZXing.Common;
+using ZXing.Rendering;
 
 namespace barcoder.Controllers
 {
@@ -12,27 +19,40 @@ namespace barcoder.Controllers
     [ApiController]
     public class ImageController : ControllerBase
     {
-        // http://localhost:21666/image.png?type=128&text=5901234123457&width=300&height=30
         [HttpGet]
-        public IActionResult Get(string text, BarcodeFormat type, int width = 300, int height = 30, int rotate = 0)
+        public IActionResult Get(string text, BarcodeFormat type, int width = 300, int height = 30, int rotate = 0, string color = "000000")
         {
+            var translatedColor = System.Drawing.ColorTranslator.FromHtml($"#{color}");
+
+            //http://localhost:16727/image.png?text=aasdasd&type=2048&width=300&height=300&rotate=0&color=03fcc6
+
             try
             {
-                var BarcodeData = new BarcodeWriterPixelData
+                var barcodeWriter = new BarcodeWriter
                 {
                     Format = type,
-                    Options = new ZXing.Common.EncodingOptions
+                    Options = new EncodingOptions
                     {
-                        Height = height,
                         Width = width,
-                        Margin = 0,
-                        PureBarcode = true
+                        Height = height,
+                        PureBarcode = true,
+                        Margin = 0
+                    },
+                    Renderer = new BitmapRenderer
+                    {
+                        Foreground = translatedColor,
+                        Background = System.Drawing.Color.White
                     }
-                }.Write(text);
+                };
+                var barCodeBitmap = barcodeWriter.Write(text);
 
-                var rotatedImage = RotateImage(BarcodeData.Pixels, rotate, BarcodeData.Width, BarcodeData.Height);
+                var convert = (System.Drawing.Image)barCodeBitmap;
 
-                return File(rotatedImage, "image/png");
+                var someBytes = convertToByteArray(convert);
+
+                var rotatedImage = RotateImage(someBytes, rotate, width, height);
+
+                return new FileContentResult(rotatedImage, "image/png");
             }
             catch (Exception e)
             {
@@ -41,12 +61,24 @@ namespace barcoder.Controllers
 
         }
 
+        private static byte[] convertToByteArray(System.Drawing.Image image)
+        {
+            using (var ms = new MemoryStream())
+            {
+                image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                return ms.ToArray();
+            }
+        }
+
 
         private static byte[] RotateImage(byte[] imageInBytes, float degree, int width, int height)
         {
-            using (var image = Image.LoadPixelData<SixLabors.ImageSharp.PixelFormats.Rgba32>(imageInBytes, width, height))
+            using (var image = SixLabors.ImageSharp.Image.Load<SixLabors.ImageSharp.PixelFormats.Rgba32>(imageInBytes))
             {
-                image.Mutate(a => a.Rotate(degree));
+                image.Mutate(a => {
+                    a.Rotate(degree);
+                    a.BackgroundColor(SixLabors.ImageSharp.Color.Red);
+                });
 
                 using (var ms = new MemoryStream())
                 {
