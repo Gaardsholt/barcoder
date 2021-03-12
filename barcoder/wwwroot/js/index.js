@@ -28,8 +28,22 @@ document.querySelectorAll('#barcodeForm input').forEach(item => {
 
 
 function onInputChange(event) {
+    checkIfHex();
     updateBarcodeData();
     updateImage();
+}
+
+function checkIfHex() {
+    if (document.getElementById("barcodeType").selectedOptions[0].value == "99999") {
+        document.getElementById("group-barcodeBorder").style.display = "block";
+        document.getElementById("barcodeText-label").innerText = "Box color";
+        document.getElementById("barcodeText").type = "color";
+        
+    } else {
+        document.getElementById("group-barcodeBorder").style.display = "none";
+        document.getElementById("barcodeText-label").innerText = "Text";
+        document.getElementById("barcodeText").type = "text";
+    }
 }
 
 function updateBarcodeData() {
@@ -38,14 +52,17 @@ function updateBarcodeData() {
     let barcodeWidth = parseInt(document.getElementById("barcodeWidth").value);
     let barcodeHeight = parseInt(document.getElementById("barcodeHeight").value);
     let barcodeRotate = parseInt(document.getElementById("barcodeRotate").value);
+    let borderColor = document.getElementById("barcodeBorder").value;
+
 
     if (barcodeType == "99999") {
         barcode = {
             url: "hex.png?",
             data: {
-                color: barcodeText,
+                color: barcodeText.replace("#", ""),
                 width: barcodeWidth,
                 height: barcodeHeight,
+                border: borderColor.replace("#", "")
             }
         };
     } else {
