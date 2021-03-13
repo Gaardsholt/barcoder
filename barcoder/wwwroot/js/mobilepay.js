@@ -45,7 +45,7 @@ function updateBarcodeData() {
     if (nr == "")
         return false
 
-    text = "https://products.mobilepay.dk/box/box?phone=" + nr + "&amount=" + amount;
+    var text = "https://products.mobilepay.dk/box/box?phone=" + nr + "&amount=" + amount;
     barcode = {
         text: text,
         type: parseInt(document.getElementById("barcodeType").selectedOptions[0].value),
