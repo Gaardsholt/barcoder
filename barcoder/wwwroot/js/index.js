@@ -102,7 +102,7 @@ function updateImage() {
 
     };
     window.xhttp.onerror = function () {
-
+        // console.log("Empty by design");
     };
 
     window.xhttp.open("GET", imgUrl, true);

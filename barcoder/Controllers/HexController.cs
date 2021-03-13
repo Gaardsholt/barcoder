@@ -18,7 +18,6 @@ namespace barcoder.Controllers
                 var borderColor = ColorTranslator.FromHtml($"#{border}");
 
                 var image = new Bitmap(width, height);
-                var graph = Graphics.FromImage(image);
                 
                 using (Graphics g = Graphics.FromImage(image))
                 {
