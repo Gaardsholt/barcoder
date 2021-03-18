@@ -4,12 +4,11 @@ using System.Drawing;
 
 namespace barcoder.Controllers
 {
-    [Route("hex.png")]
     [ApiController]
     public class HexController : ControllerBase
     {
 
-        [HttpGet("")]
+        [HttpGet("hex.png")]
         public IActionResult Get(string color, string border, int width = 300, int height = 300)
         {
             try
@@ -18,7 +17,7 @@ namespace barcoder.Controllers
                 var borderColor = ColorTranslator.FromHtml($"#{border}");
 
                 var image = new Bitmap(width, height);
-                
+
                 using (Graphics g = Graphics.FromImage(image))
                 {
                     g.Clear(backgroundColor);
