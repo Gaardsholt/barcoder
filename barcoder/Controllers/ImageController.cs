@@ -98,7 +98,7 @@ namespace barcoder.Controllers
             return newImage;
         }
 
-        private Bitmap RotateImage(Bitmap bm, float angle)
+        private static Bitmap RotateImage(Bitmap bm, float angle)
         {
             // Make a Matrix to represent rotation by this angle.
             var rotate_at_origin = new Matrix();
