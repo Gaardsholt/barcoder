@@ -16,7 +16,7 @@ namespace barcoder.Controllers
         }
 
 
-        [Route("Mobilepay")]
+        [HttpGet("Mobilepay")]
         public IActionResult Mobilepay()
         {
             return View();

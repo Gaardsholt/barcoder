@@ -6,11 +6,10 @@ using ZXing;
 
 namespace barcoder.Controllers
 {
-    [Route("Api")]
     [ApiController]
     public class ApiController : ControllerBase
     {
-        [HttpGet]
+        [HttpGet("Api")]
         public Dictionary<string, int> GetTypes()
         {
             var allowedBarcodes = MultiFormatWriter.SupportedWriters.ToList();

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.IO;
 using ZXing;
 using ZXing.QrCode.Internal;
@@ -8,12 +9,11 @@ using ZXing.Rendering;
 
 namespace barcoder.Controllers
 {
-    [Route("image.png")]
     [ApiController]
     public class ImageController : ControllerBase
     {
-        
-        [HttpGet]
+
+        [HttpGet("image.png")]
         public IActionResult Get(string text, BarcodeFormat type, string logo, int width = 300, int height = 30, int rotate = 0)
         {
             try
@@ -50,7 +50,7 @@ namespace barcoder.Controllers
 
         private static byte[] Bitmap2Byte(Bitmap bm)
         {
-            var image = (System.Drawing.Image)bm;
+            var image = (Image)bm;
             using (var ms = new MemoryStream())
             {
                 image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
@@ -67,7 +67,7 @@ namespace barcoder.Controllers
             var deltaWidth = bm.Width - overlay.Width;
 
             var g = Graphics.FromImage(bm);
-            g.DrawImage(overlay, new System.Drawing.Point(deltaWidth / 2, deltaHeigth / 2));
+            g.DrawImage(overlay, new Point(deltaWidth / 2, deltaHeigth / 2));
             return bm;
         }
 
@@ -80,7 +80,6 @@ namespace barcoder.Controllers
 
             return overlay;
         }
-
 
         public static Bitmap ScaleImage(Bitmap bmp, int maxWidth, int maxHeight)
         {
@@ -99,20 +98,65 @@ namespace barcoder.Controllers
             return newImage;
         }
 
-        private static Bitmap RotateImage(Bitmap bm, float rotate)
+        private Bitmap RotateImage(Bitmap bm, float angle)
         {
-            using (Graphics g = Graphics.FromImage(bm))
+            // Make a Matrix to represent rotation by this angle.
+            var rotate_at_origin = new Matrix();
+            rotate_at_origin.Rotate(angle);
+
+            // Rotate the image's corners to see how big it will be after rotation.
+            PointF[] points =
             {
-                // Set the rotation point to the center in the matrix
-                g.TranslateTransform(bm.Width / 2, bm.Height / 2);
-                // Rotate
-                g.RotateTransform(rotate);
-                // Restore rotation point in the matrix
-                g.TranslateTransform(-bm.Width / 2, -bm.Height / 2);
-                // Draw the image on the bitmap
-                g.DrawImage(bm, new System.Drawing.Point(0, 0));
+                new PointF(0, 0),
+                new PointF(bm.Width, 0),
+                new PointF(bm.Width, bm.Height),
+                new PointF(0, bm.Height),
+            };
+            rotate_at_origin.TransformPoints(points);
+
+
+            var result = CreateBitMapThatFits(points);
+
+            // Create the real rotation transformation.
+            var rotate_at_center = new Matrix();
+            rotate_at_center.RotateAt(angle, new PointF(result.Width / 2f, result.Height / 2f));
+
+            // Draw the image onto the new bitmap rotated.
+            using (Graphics gr = Graphics.FromImage(result))
+            {
+                gr.InterpolationMode = InterpolationMode.High;
+                gr.Clear(bm.GetPixel(0, 0));
+
+                gr.Transform = rotate_at_center;
+
+                // Draw the image centered on the bitmap.
+                int x = (result.Width - bm.Width) / 2;
+                int y = (result.Height - bm.Height) / 2;
+                gr.DrawImage(bm, x, y);
             }
-            return bm;
+
+            return result;
+        }
+
+        private static Bitmap CreateBitMapThatFits(PointF[] points)
+        {
+            var xmin = points[0].X;
+            var xmax = xmin;
+            var ymin = points[0].Y;
+            var ymax = ymin;
+            foreach (PointF point in points)
+            {
+                if (xmin > point.X) xmin = point.X;
+                if (xmax < point.X) xmax = point.X;
+                if (ymin > point.Y) ymin = point.Y;
+                if (ymax < point.Y) ymax = point.Y;
+            }
+
+            int wid = (int)Math.Round(xmax - xmin);
+            int hgt = (int)Math.Round(ymax - ymin);
+            var result = new Bitmap(wid, hgt);
+
+            return result;
         }
 
     }
