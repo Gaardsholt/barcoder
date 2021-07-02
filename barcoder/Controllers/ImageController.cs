@@ -14,6 +14,8 @@ namespace barcoder.Controllers
     {
 
         [HttpGet("image.png")]
+        [HttpOptions("image.png")]
+        [HttpHead("image.png")]
         public IActionResult Get(string text, BarcodeFormat type, string logo, int width = 300, int height = 30, int rotate = 0)
         {
             try

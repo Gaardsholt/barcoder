@@ -24,6 +24,13 @@ namespace barcoder
         {
             services.AddControllersWithViews();
 
+            services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+            {
+                builder.AllowAnyHeader()
+                       .AllowAnyMethod()
+                       .AllowAnyOrigin();
+            }));
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc(_apiVersion, new OpenApiInfo { Title = _apiTitle, Version = _apiVersion });
@@ -33,6 +40,8 @@ namespace barcoder
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseCors("MyPolicy");
+
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
