@@ -9,6 +9,8 @@ namespace barcoder.Controllers
     {
 
         [HttpGet("hex.png")]
+        [HttpOptions("hex.png")]
+        [HttpHead("hex.png")]
         public IActionResult Get(string color, string border, int width = 300, int height = 300)
         {
             try
