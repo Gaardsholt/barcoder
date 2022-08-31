@@ -42,6 +42,7 @@ jobs:
           name: Install Java for SonarCloud Scanner
           command: |
             mkdir -p /usr/share/man/man1
+            curl -s https://deb.nodesource.com/setup_16.x | bash
             apt update -y
             apt install default-jdk -y
             apt install nodejs -y
