@@ -4,5 +4,3 @@
 # barcoder
 
 This is used for generating barcodes
-
-
