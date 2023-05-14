@@ -8,10 +8,6 @@ executors:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:5.0
 
-orbs: 
-  secret-injector: bestsellerit/secret-injector@1.7.6
-  
-
 commands:
   docker-build:
     steps:
