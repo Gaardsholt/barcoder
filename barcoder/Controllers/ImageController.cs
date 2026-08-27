@@ -16,10 +16,22 @@ namespace barcoder.Controllers
         [HttpGet("image.png")]
         [HttpOptions("image.png")]
         [HttpHead("image.png")]
-        public IActionResult Get(string text, BarcodeFormat type, string logo, int width = 300, int height = 30, int rotate = 0)
+        public IActionResult Get(string text, BarcodeFormat type, string logo, int width = 300, int height = 30, int rotate = 0, string foreground = "000000", string background = "ffffff")
         {
             try
             {
+                Color foregroundColor;
+                Color backgroundColor;
+                try
+                {
+                    foregroundColor = ColorTranslator.FromHtml($"#{foreground}");
+                    backgroundColor = ColorTranslator.FromHtml($"#{background}");
+                }
+                catch (Exception)
+                {
+                    return BadRequest("Invalid color value. Please provide valid hex colors (e.g. 000000 for black).");
+                }
+
                 var barcodeOptions = new ZXing.Common.EncodingOptions()
                 {
                     Height = height,
@@ -34,6 +46,10 @@ namespace barcoder.Controllers
                     Format = type,
                     Options = barcodeOptions,
                     Renderer = new BitmapRenderer()
+                    {
+                        Foreground = foregroundColor,
+                        Background = backgroundColor
+                    }
                 }.Write(text);
 
                 if (type == BarcodeFormat.QR_CODE && !string.IsNullOrEmpty(logo))

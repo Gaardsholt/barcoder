@@ -53,6 +53,8 @@ function updateBarcodeData() {
     let barcodeHeight = parseInt(document.getElementById("barcodeHeight").value);
     let barcodeRotate = parseInt(document.getElementById("barcodeRotate").value);
     let borderColor = document.getElementById("barcodeBorder").value;
+    let foregroundColor = document.getElementById("barcodeForeground").value;
+    let backgroundColor = document.getElementById("barcodeBackground").value;
 
 
     if (barcodeType == "99999") {
@@ -73,7 +75,9 @@ function updateBarcodeData() {
                 type: barcodeType,
                 width: barcodeWidth,
                 height: barcodeHeight,
-                rotate: barcodeRotate
+                rotate: barcodeRotate,
+                foreground: foregroundColor.replace("#", ""),
+                background: backgroundColor.replace("#", "")
             }
         };
     }
