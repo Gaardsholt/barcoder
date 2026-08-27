@@ -29,7 +29,7 @@ namespace barcoder.Controllers
                 }
                 catch (Exception)
                 {
-                    return BadRequest($"Invalid color value. Please provide valid hex colors (e.g. 000000 for black).");
+                    return BadRequest("Invalid color value. Please provide valid hex colors (e.g. 000000 for black).");
                 }
 
                 var barcodeOptions = new ZXing.Common.EncodingOptions()
