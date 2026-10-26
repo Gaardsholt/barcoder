@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Skia;
+using SkiaSharp;
 using System;
-using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.IO;
+using System.Net.Http;
+using System.Runtime.InteropServices;
 using ZXing;
 using ZXing.QrCode.Internal;
 using ZXing.Rendering;
@@ -12,6 +15,7 @@ namespace barcoder.Controllers
     [ApiController]
     public class ImageController : ControllerBase
     {
+        private static readonly HttpClient HttpClient = new HttpClient();
 
         [HttpGet("image.png")]
         [HttpOptions("image.png")]
@@ -29,20 +33,19 @@ namespace barcoder.Controllers
                 };
                 barcodeOptions.Hints.Add(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
 
-                var bm = new BarcodeWriter()
+                var pixelData = new BarcodeWriter<PixelData>()
                 {
                     Format = type,
                     Options = barcodeOptions,
-                    Renderer = new BitmapRenderer()
+                    Renderer = new PixelDataRenderer()
                 }.Write(text);
 
-                if (type == BarcodeFormat.QR_CODE && !string.IsNullOrEmpty(logo))
-                    bm = AddLogoToBarcode(bm, logo);
+                using var barcode = ToBitmap(pixelData);
+                using var overlay = type == BarcodeFormat.QR_CODE && !string.IsNullOrEmpty(logo)
+                    ? DownloadImage(logo)
+                    : null;
 
-                var rotatedImage = RotateImage(bm, rotate);
-                var imageAsByte = Bitmap2Byte(rotatedImage);
-
-                return File(imageAsByte, "image/png");
+                return File(Render(barcode, overlay, rotate), "image/png");
             }
             catch (Exception e)
             {
@@ -50,115 +53,53 @@ namespace barcoder.Controllers
             }
         }
 
-        private static byte[] Bitmap2Byte(Bitmap bm)
+        private static SKBitmap ToBitmap(PixelData data)
         {
-            var image = (Image)bm;
-            using (var ms = new MemoryStream())
+            var bitmap = new SKBitmap(new SKImageInfo(data.Width, data.Height, SKColorType.Bgra8888, SKAlphaType.Premul));
+            Marshal.Copy(data.Pixels, 0, bitmap.GetPixels(), data.Pixels.Length);
+            return bitmap;
+        }
+
+        private static SKBitmap DownloadImage(string url)
+        {
+            using var stream = HttpClient.GetStreamAsync(url).GetAwaiter().GetResult();
+            return SKBitmap.Decode(stream) ?? throw new InvalidDataException("The logo is not a valid image.");
+        }
+
+        private static byte[] Render(SKBitmap barcode, SKBitmap overlay, float angle)
+        {
+            var radians = angle * Math.PI / 180;
+            var cos = Math.Abs(Math.Cos(radians));
+            var sin = Math.Abs(Math.Sin(radians));
+            var outWidth = Math.Max(1, (int)Math.Round(barcode.Width * cos + barcode.Height * sin));
+            var outHeight = Math.Max(1, (int)Math.Round(barcode.Width * sin + barcode.Height * cos));
+
+            var background = barcode.GetPixel(0, 0);
+
+            using var context = new SkiaBitmapExportContext(outWidth, outHeight, 1);
+            var canvas = context.Canvas;
+
+            canvas.FillColor = Color.FromRgba(background.Red, background.Green, background.Blue, background.Alpha);
+            canvas.FillRectangle(0, 0, outWidth, outHeight);
+
+            canvas.Translate(outWidth / 2f, outHeight / 2f);
+            canvas.Rotate(angle);
+            canvas.Translate(-barcode.Width / 2f, -barcode.Height / 2f);
+
+            var barcodeImage = new SkiaImage(barcode);
+            canvas.DrawImage(barcodeImage, 0, 0, barcode.Width, barcode.Height);
+
+            if (overlay != null)
             {
-                image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                return ms.ToArray();
-            }
-        }
+                var ratio = Math.Min((double)(barcode.Width / 3) / overlay.Width, (double)(barcode.Height / 3) / overlay.Height);
+                var newWidth = (int)(overlay.Width * ratio);
+                var newHeight = (int)(overlay.Height * ratio);
 
-        private static Bitmap AddLogoToBarcode(Bitmap bm, string url)
-        {
-            var overlay = DownloadImageAsBitmap(url);
-            overlay = ScaleImage(overlay, bm.Width / 3, bm.Height / 3);
-
-            var deltaHeigth = bm.Height - overlay.Height;
-            var deltaWidth = bm.Width - overlay.Width;
-
-            var g = Graphics.FromImage(bm);
-            g.DrawImage(overlay, new Point(deltaWidth / 2, deltaHeigth / 2));
-            return bm;
-        }
-
-        private static Bitmap DownloadImageAsBitmap(string url)
-        {
-            var request = System.Net.WebRequest.Create(url);
-            var response = request.GetResponse();
-            var responseStream = response.GetResponseStream();
-            var overlay = new Bitmap(responseStream);
-
-            return overlay;
-        }
-
-        public static Bitmap ScaleImage(Bitmap bmp, int maxWidth, int maxHeight)
-        {
-            var ratioX = (double)maxWidth / bmp.Width;
-            var ratioY = (double)maxHeight / bmp.Height;
-            var ratio = Math.Min(ratioX, ratioY);
-
-            var newWidth = (int)(bmp.Width * ratio);
-            var newHeight = (int)(bmp.Height * ratio);
-
-            var newImage = new Bitmap(newWidth, newHeight);
-
-            using (var graphics = Graphics.FromImage(newImage))
-                graphics.DrawImage(bmp, 0, 0, newWidth, newHeight);
-
-            return newImage;
-        }
-
-        private Bitmap RotateImage(Bitmap bm, float angle)
-        {
-            // Make a Matrix to represent rotation by this angle.
-            var rotate_at_origin = new Matrix();
-            rotate_at_origin.Rotate(angle);
-
-            // Rotate the image's corners to see how big it will be after rotation.
-            PointF[] points =
-            {
-                new PointF(0, 0),
-                new PointF(bm.Width, 0),
-                new PointF(bm.Width, bm.Height),
-                new PointF(0, bm.Height),
-            };
-            rotate_at_origin.TransformPoints(points);
-
-
-            var result = CreateBitMapThatFits(points);
-
-            // Create the real rotation transformation.
-            var rotate_at_center = new Matrix();
-            rotate_at_center.RotateAt(angle, new PointF(result.Width / 2f, result.Height / 2f));
-
-            // Draw the image onto the new bitmap rotated.
-            using (Graphics gr = Graphics.FromImage(result))
-            {
-                gr.InterpolationMode = InterpolationMode.High;
-                gr.Clear(bm.GetPixel(0, 0));
-
-                gr.Transform = rotate_at_center;
-
-                // Draw the image centered on the bitmap.
-                int x = (result.Width - bm.Width) / 2;
-                int y = (result.Height - bm.Height) / 2;
-                gr.DrawImage(bm, x, y);
+                var overlayImage = new SkiaImage(overlay);
+                canvas.DrawImage(overlayImage, (barcode.Width - newWidth) / 2, (barcode.Height - newHeight) / 2, newWidth, newHeight);
             }
 
-            return result;
-        }
-
-        private static Bitmap CreateBitMapThatFits(PointF[] points)
-        {
-            var xmin = points[0].X;
-            var xmax = xmin;
-            var ymin = points[0].Y;
-            var ymax = ymin;
-            foreach (PointF point in points)
-            {
-                if (xmin > point.X) xmin = point.X;
-                if (xmax < point.X) xmax = point.X;
-                if (ymin > point.Y) ymin = point.Y;
-                if (ymax < point.Y) ymax = point.Y;
-            }
-
-            int wid = (int)Math.Round(xmax - xmin);
-            int hgt = (int)Math.Round(ymax - ymin);
-            var result = new Bitmap(wid, hgt);
-
-            return result;
+            return context.Image.AsBytes(ImageFormat.Png);
         }
 
     }
