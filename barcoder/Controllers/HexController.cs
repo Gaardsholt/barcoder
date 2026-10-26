@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Drawing;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using System.IO;
 
 namespace barcoder.Controllers
 {
@@ -15,18 +17,26 @@ namespace barcoder.Controllers
         {
             try
             {
-                var backgroundColor = ColorTranslator.FromHtml($"#{color}");
-                var borderColor = ColorTranslator.FromHtml($"#{border}");
+                var backgroundColor = Color.ParseHex(color);
+                var borderColor = Color.ParseHex(border);
 
-                var image = new Bitmap(width, height);
+                using var image = new Image<Rgba32>(width, height, backgroundColor.ToPixel<Rgba32>());
 
-                using (Graphics g = Graphics.FromImage(image))
+                // Border of 3px drawn inside the image bounds
+                const int thickness = 3;
+                var borderPixel = borderColor.ToPixel<Rgba32>();
+                for (var y = 0; y < height; y++)
                 {
-                    g.Clear(backgroundColor);
-                    g.DrawRectangle(new Pen(borderColor, 3), new Rectangle(1, 1, image.Width - 3, image.Height - 3));
+                    for (var x = 0; x < width; x++)
+                    {
+                        if (x < thickness || y < thickness || x >= width - thickness || y >= height - thickness)
+                            image[x, y] = borderPixel;
+                    }
                 }
 
-                return File((byte[])(new ImageConverter()).ConvertTo(image, typeof(byte[])), "image/png");
+                using var ms = new MemoryStream();
+                image.SaveAsPng(ms);
+                return File(ms.ToArray(), "image/png");
             }
             catch (Exception e)
             {
