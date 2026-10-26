@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Skia;
 using System;
-using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.IO;
 using ZXing;
+using ZXing.Common;
 using ZXing.QrCode.Internal;
 using ZXing.Rendering;
 
@@ -29,20 +30,21 @@ namespace barcoder.Controllers
                 };
                 barcodeOptions.Hints.Add(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
 
-                var bm = new BarcodeWriter()
+                using var barcode = new BarcodeWriter<SkiaBitmapExportContext>()
                 {
                     Format = type,
                     Options = barcodeOptions,
-                    Renderer = new BitmapRenderer()
+                    Renderer = new MauiBarcodeRenderer()
                 }.Write(text);
 
                 if (type == BarcodeFormat.QR_CODE && !string.IsNullOrEmpty(logo))
-                    bm = AddLogoToBarcode(bm, logo);
+                    AddLogoToBarcode(barcode, logo);
 
-                var rotatedImage = RotateImage(bm, rotate);
-                var imageAsByte = Bitmap2Byte(rotatedImage);
+                using var rotatedImage = RotateImage(barcode, rotate);
+                using var ms = new MemoryStream();
+                rotatedImage.WriteToStream(ms);
 
-                return File(imageAsByte, "image/png");
+                return File(ms.ToArray(), "image/png");
             }
             catch (Exception e)
             {
@@ -50,115 +52,80 @@ namespace barcoder.Controllers
             }
         }
 
-        private static byte[] Bitmap2Byte(Bitmap bm)
-        {
-            var image = (Image)bm;
-            using (var ms = new MemoryStream())
-            {
-                image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                return ms.ToArray();
-            }
-        }
-
-        private static Bitmap AddLogoToBarcode(Bitmap bm, string url)
-        {
-            var overlay = DownloadImageAsBitmap(url);
-            overlay = ScaleImage(overlay, bm.Width / 3, bm.Height / 3);
-
-            var deltaHeigth = bm.Height - overlay.Height;
-            var deltaWidth = bm.Width - overlay.Width;
-
-            var g = Graphics.FromImage(bm);
-            g.DrawImage(overlay, new Point(deltaWidth / 2, deltaHeigth / 2));
-            return bm;
-        }
-
-        private static Bitmap DownloadImageAsBitmap(string url)
+        private static void AddLogoToBarcode(SkiaBitmapExportContext barcode, string url)
         {
             var request = System.Net.WebRequest.Create(url);
-            var response = request.GetResponse();
-            var responseStream = response.GetResponseStream();
-            var overlay = new Bitmap(responseStream);
-
-            return overlay;
-        }
-
-        public static Bitmap ScaleImage(Bitmap bmp, int maxWidth, int maxHeight)
-        {
-            var ratioX = (double)maxWidth / bmp.Width;
-            var ratioY = (double)maxHeight / bmp.Height;
-            var ratio = Math.Min(ratioX, ratioY);
-
-            var newWidth = (int)(bmp.Width * ratio);
-            var newHeight = (int)(bmp.Height * ratio);
-
-            var newImage = new Bitmap(newWidth, newHeight);
-
-            using (var graphics = Graphics.FromImage(newImage))
-                graphics.DrawImage(bmp, 0, 0, newWidth, newHeight);
-
-            return newImage;
-        }
-
-        private Bitmap RotateImage(Bitmap bm, float angle)
-        {
-            // Make a Matrix to represent rotation by this angle.
-            var rotate_at_origin = new Matrix();
-            rotate_at_origin.Rotate(angle);
-
-            // Rotate the image's corners to see how big it will be after rotation.
-            PointF[] points =
+            using (var response = request.GetResponse())
+            using (var stream = response.GetResponseStream())
+            using (var overlay = SkiaImage.FromStream(stream))
             {
-                new PointF(0, 0),
-                new PointF(bm.Width, 0),
-                new PointF(bm.Width, bm.Height),
-                new PointF(0, bm.Height),
-            };
-            rotate_at_origin.TransformPoints(points);
-
-
-            var result = CreateBitMapThatFits(points);
-
-            // Create the real rotation transformation.
-            var rotate_at_center = new Matrix();
-            rotate_at_center.RotateAt(angle, new PointF(result.Width / 2f, result.Height / 2f));
-
-            // Draw the image onto the new bitmap rotated.
-            using (Graphics gr = Graphics.FromImage(result))
-            {
-                gr.InterpolationMode = InterpolationMode.High;
-                gr.Clear(bm.GetPixel(0, 0));
-
-                gr.Transform = rotate_at_center;
-
-                // Draw the image centered on the bitmap.
-                int x = (result.Width - bm.Width) / 2;
-                int y = (result.Height - bm.Height) / 2;
-                gr.DrawImage(bm, x, y);
+                var scale = Math.Min(barcode.Width / 3f / overlay.Width, barcode.Height / 3f / overlay.Height);
+                var width = overlay.Width * scale;
+                var height = overlay.Height * scale;
+                barcode.Canvas.DrawImage(overlay, (barcode.Width - width) / 2, (barcode.Height - height) / 2, width, height);
             }
+        }
 
+        private static SkiaBitmapExportContext RotateImage(SkiaBitmapExportContext image, float angle)
+        {
+            var radians = angle * Math.PI / 180;
+            var width = Math.Max(1, (int)Math.Round(Math.Abs(image.Width * Math.Cos(radians)) + Math.Abs(image.Height * Math.Sin(radians))));
+            var height = Math.Max(1, (int)Math.Round(Math.Abs(image.Height * Math.Cos(radians)) + Math.Abs(image.Width * Math.Sin(radians))));
+            var result = new SkiaBitmapExportContext(width, height, 1f);
+            var canvas = result.Canvas;
+
+            canvas.FillColor = Colors.White;
+            canvas.FillRectangle(0, 0, width, height);
+            canvas.Translate(width / 2f, height / 2f);
+            canvas.Rotate(angle);
+            canvas.DrawImage(image.Image, -image.Width / 2f, -image.Height / 2f, image.Width, image.Height);
             return result;
         }
 
-        private static Bitmap CreateBitMapThatFits(PointF[] points)
+        private sealed class MauiBarcodeRenderer : IBarcodeRenderer<SkiaBitmapExportContext>
         {
-            var xmin = points[0].X;
-            var xmax = xmin;
-            var ymin = points[0].Y;
-            var ymax = ymin;
-            foreach (PointF point in points)
+            public SkiaBitmapExportContext Render(BitMatrix matrix, BarcodeFormat format, string content)
             {
-                if (xmin > point.X) xmin = point.X;
-                if (xmax < point.X) xmax = point.X;
-                if (ymin > point.Y) ymin = point.Y;
-                if (ymax < point.Y) ymax = point.Y;
+                return Render(matrix, format, content, new EncodingOptions
+                {
+                    Width = matrix.Width,
+                    Height = matrix.Height
+                });
             }
 
-            int wid = (int)Math.Round(xmax - xmin);
-            int hgt = (int)Math.Round(ymax - ymin);
-            var result = new Bitmap(wid, hgt);
+            public SkiaBitmapExportContext Render(BitMatrix matrix, BarcodeFormat format, string content, EncodingOptions options)
+            {
+                var result = new SkiaBitmapExportContext(options.Width, options.Height, 1f);
+                var canvas = result.Canvas;
+                var scaleX = options.Width / (float)matrix.Width;
+                var scaleY = options.Height / (float)matrix.Height;
 
-            return result;
+                canvas.Antialias = false;
+                canvas.FillColor = Colors.White;
+                canvas.FillRectangle(0, 0, options.Width, options.Height);
+                canvas.FillColor = Colors.Black;
+
+                for (var y = 0; y < matrix.Height; y++)
+                {
+                    var x = 0;
+                    while (x < matrix.Width)
+                    {
+                        if (!matrix[x, y])
+                        {
+                            x++;
+                            continue;
+                        }
+
+                        var start = x;
+                        while (x < matrix.Width && matrix[x, y])
+                            x++;
+
+                        canvas.FillRectangle(start * scaleX, y * scaleY, (x - start) * scaleX, scaleY);
+                    }
+                }
+
+                return result;
+            }
         }
 
     }
