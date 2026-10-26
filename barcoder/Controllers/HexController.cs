@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Drawing;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Skia;
 
 namespace barcoder.Controllers
 {
@@ -15,18 +16,19 @@ namespace barcoder.Controllers
         {
             try
             {
-                var backgroundColor = ColorTranslator.FromHtml($"#{color}");
-                var borderColor = ColorTranslator.FromHtml($"#{border}");
+                var backgroundColor = Color.FromArgb($"#{color}");
+                var borderColor = Color.FromArgb($"#{border}");
 
-                var image = new Bitmap(width, height);
+                using var context = new SkiaBitmapExportContext(width, height, 1);
+                var canvas = context.Canvas;
 
-                using (Graphics g = Graphics.FromImage(image))
-                {
-                    g.Clear(backgroundColor);
-                    g.DrawRectangle(new Pen(borderColor, 3), new Rectangle(1, 1, image.Width - 3, image.Height - 3));
-                }
+                canvas.FillColor = backgroundColor;
+                canvas.FillRectangle(0, 0, width, height);
+                canvas.StrokeColor = borderColor;
+                canvas.StrokeSize = 3;
+                canvas.DrawRectangle(1, 1, width - 3, height - 3);
 
-                return File((byte[])(new ImageConverter()).ConvertTo(image, typeof(byte[])), "image/png");
+                return File(context.Image.AsBytes(ImageFormat.Png), "image/png");
             }
             catch (Exception e)
             {
